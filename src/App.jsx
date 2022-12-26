@@ -1,34 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import {
+  Route,
+  createBrowserRouter,
+  createRoutesFromElements,
+  defer,
+} from 'react-router-dom'
+import { LoginPage } from './pages/Login'
+import { ProfilePage } from './pages/Profile'
+import { SettingsPage } from './pages/Settings'
+import { ProtectedLayout } from './components/ProtectedLayout'
+import { HomeLayout } from './components/HomeLayout'
+import { AuthLayout } from './components/AuthLayout'
 
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
+const getUserData = () =>
+  new Promise((resolve) =>
+    setTimeout(() => {
+      const user = window.localStorage.getItem('user')
+      resolve(user)
+    }, 3000),
   )
-}
 
-export default App
+// for error
+// const getUserData = () =>
+//   new Promise((resolve, reject) =>
+//     setTimeout(() => {
+//       reject("Error");
+//     }, 3000)
+//   );
+
+export const router = createBrowserRouter(
+  createRoutesFromElements(
+    <Route
+      element={<AuthLayout />}
+      loader={() => defer({ userPromise: getUserData() })}
+    >
+      <Route element={<HomeLayout />}>
+        <Route path="/" element={<LoginPage />} />
+      </Route>
+
+      <Route path="/dashboard" element={<ProtectedLayout />}>
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="settings" element={<SettingsPage />} />
+      </Route>
+    </Route>,
+  ),
+)
